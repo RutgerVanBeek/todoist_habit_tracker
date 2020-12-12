@@ -24,10 +24,10 @@ class TodoistConnection():
 
     @property
     def uncompleted_tasks(self):
-        return self.filter_tasks(lambda task: task['checked']==0)
+        return self.filter_tasks(lambda task: task['checked'] == 0)
 
     def filter_tasks(self, filter_function):
-        return filter(filter_function, self.api.state['items'])
+        return list(filter(filter_function, self.api.state['items']))
 
     def _sync(self):
         self.api.sync()
