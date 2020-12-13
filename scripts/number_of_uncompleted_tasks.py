@@ -9,5 +9,5 @@ if __name__ == '__main__':
     dumpfile = os.path.join(os.path.split(dirname)[0], '.log/log.txt')
     print(len(todoist.uncompleted_tasks))
     try:
-        with open(dumpfile, 'w') as f:
-            f.write(str(datetime.now)+ '     ' + str(len(todoist.uncompleted_tasks)))
+        with open(dumpfile, 'a') as f:
+            f.write(str(datetime.now)+ '     ' + str(len(todoist.uncompleted_tasks)) + '\n')
