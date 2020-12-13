@@ -6,6 +6,8 @@ class TodoistConnection():
     def __init__(self, token):
         self.api = todoist.TodoistAPI(token)
         self._sync()
+        self._projects = self.api.state['projects']
+        self._tasks = self.api.state['items']
 
     @classmethod
     def from_config_file(cls, config_file):
@@ -16,11 +18,11 @@ class TodoistConnection():
 
     @property
     def projects(self):
-        return self.api.state['projects']
+        return self._projects
 
     @property
     def tasks(self):
-        return self.api.state['items']
+        return self._tasks
 
     @property
     def uncompleted_tasks(self):
