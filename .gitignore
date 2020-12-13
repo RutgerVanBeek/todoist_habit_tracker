@@ -1,3 +1,5 @@
 /.config/
 /Todoist_Habit_Tracker.egg-info/
 /log/
+.idea/
+todoist_habit_tracker/__pycache__/
