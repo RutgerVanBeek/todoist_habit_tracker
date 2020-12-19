@@ -1,5 +1,6 @@
 from todoist_habit_tracker import todoist_connection
 import os
+import todoist
 from datetime import datetime
 
 if __name__ == '__main__':
