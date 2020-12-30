@@ -43,9 +43,14 @@ class TodoistConnection():
         raise KeyError('There is no label with the name {name}'.format(name=name))
 
     def add_task(self, task):
-        # task['note'] += ' {automatic}'
+        # task['content'] += ' {automatic}'
         self.api.items.add(**task)
-        # self.api.items.add(task['content'])
+
+    def delete_task(self, task):
+        self.delete_task_id(task['id'])
+
+    def delete_task_id(self, task_id):
+        self.api.items.delete(task_id)
 
     def _sync(self):
         self.api.sync()
