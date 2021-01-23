@@ -1,7 +1,7 @@
 from todoist_habit_tracker.todoist_connection import TodoistConnection
 from todoist_habit_tracker.habit import Habit
 import os
-from datetime import datetime
+
 
 def init_todoist():
     dirname = os.path.abspath(os.path.dirname(__file__))

@@ -8,14 +8,13 @@ class TodoistConnection():
         self._sync()
         self._projects = self.api.state['projects']
         self._tasks = self.api.state['items']
-        self._labels= self.api.state['labels']
+        self._labels = self.api.state['labels']
 
     @classmethod
     def from_config_file(cls, config_file):
         with open(config_file) as file:
             token = file.read()
         return cls(token)
-
 
     @property
     def projects(self):
@@ -66,7 +65,7 @@ class TodoistConnection():
         self.api.sync()
         self._projects = self.api.state['projects']
         self._tasks = self.api.state['items']
-        self._labels= self.api.state['labels']
+        self._labels = self.api.state['labels']
 
     def commit(self):
         self.api.commit()

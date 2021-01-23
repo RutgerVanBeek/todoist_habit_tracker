@@ -14,7 +14,11 @@ class Habit:
         print(len(re.sub('\[(.*)\]', '', self.task['content'])))
 
     def create_new(self, due='today'):
-        task = {'content': re.sub('\[(.*)\]', '', self.task['content']).strip(), 'project_id': self.task['project_id'], 'priority': self.task['priority']}
+        task = {
+            'content': re.sub('\[(.*)\]', '', self.task['content']).strip(),
+            'project_id': self.task['project_id'],
+            'priority': self.task['priority']
+        }
         task['labels'] = [label for label in self.task['labels'] if label != self.label_id]
         task['due'] = {'string': due}
         # also copy subtasks
@@ -23,13 +27,15 @@ class Habit:
         # get subtasks
         for subtask in subtasks:
             # copy task
-            new_task = {'content': subtask['content'], 'project_id': subtask['project_id'], 'priority': subtask['priority']}
+            new_task = {'content': subtask['content'], 'project_id': subtask['project_id'],
+                        'priority': subtask['priority']}
             new_task['parent_id'] = new['id']
             self.api.add_task(new_task)
 
     def equal_tasks(self):
-        is_equal = lambda task: task['content'] == re.sub('\[(.*)\]', '', self.task['content']).strip() and task['project_id'] == self.task[
-            'project_id'] and not self.label_id in task['labels']
+        def is_equal(task):
+            return task['content'] == re.sub('\[(.*)\]', '', self.task['content']).strip() and \
+                task['project_id'] == self.task['project_id'] and self.label_id not in task['labels']
         return self.api.filter_tasks(is_equal)
 
     def determine_action(self):
@@ -38,7 +44,7 @@ class Habit:
         for task in self.equal_tasks():
             print('due is')
             print(task['due'])
-            if task['due']=='today':
+            if task['due'] == 'today':
                 flag = True
             else:
                 if not self.later:
@@ -48,7 +54,3 @@ class Habit:
 
     def __str__(self):
         return 'habit: {0}'.format(self.task['content'])
-
-
-
-

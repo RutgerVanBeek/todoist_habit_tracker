@@ -1,6 +1,5 @@
 from todoist_habit_tracker import todoist_connection
 import os
-import todoist
 from datetime import datetime
 
 if __name__ == '__main__':
@@ -11,7 +10,7 @@ if __name__ == '__main__':
     print(len(todoist.uncompleted_tasks))
     try:
         with open(dumpfile, 'a') as f:
-            f.write(str(datetime.now())+ '     ' + str(len(todoist.uncompleted_tasks)) + '\n')
+            f.write(str(datetime.now()) + '     ' + str(len(todoist.uncompleted_tasks)) + '\n')
     except FileNotFoundError:
         with open(dumpfile, 'w') as f:
-            f.write(str(datetime.now())+ '     ' + str(len(todoist.uncompleted_tasks)) + '\n')
+            f.write(str(datetime.now()) + '     ' + str(len(todoist.uncompleted_tasks)) + '\n')
