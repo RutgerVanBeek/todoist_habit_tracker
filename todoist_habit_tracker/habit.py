@@ -1,5 +1,5 @@
 import re
-import copy
+
 
 class Habit:
 
@@ -17,7 +17,15 @@ class Habit:
         task = {'content': re.sub('\[(.*)\]', '', self.task['content']).strip(), 'project_id': self.task['project_id'], 'priority': self.task['priority']}
         task['labels'] = [label for label in self.task['labels'] if label != self.label_id]
         task['due'] = {'string': due}
-        self.api.add_task(task)
+        # also copy subtasks
+        subtasks = self.api.filter_tasks(lambda x: self.task['id'] == x['parent_id'])
+        new = self.api.add_task(task)
+        # get subtasks
+        for subtask in subtasks:
+            # copy task
+            new_task = {'content': subtask['content'], 'project_id': subtask['project_id'], 'priority': subtask['priority']}
+            new_task['parent_id'] = new['id']
+            self.api.add_task(new_task)
 
     def equal_tasks(self):
         is_equal = lambda task: task['content'] == re.sub('\[(.*)\]', '', self.task['content']).strip() and task['project_id'] == self.task[

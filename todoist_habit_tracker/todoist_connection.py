@@ -42,9 +42,15 @@ class TodoistConnection():
                 return label
         raise KeyError('There is no label with the name {name}'.format(name=name))
 
+    def get_project_by_name(self, name):
+        for project in self.projects:
+            if project['name'] == name:
+                return project
+        raise KeyError('There is no project with the name {name}'.format(name=name))
+
     def add_task(self, task):
         # task['content'] += ' {automatic}'
-        self.api.items.add(**task)
+        return self.api.items.add(**task)
 
     def delete_task(self, task):
         self.delete_task_id(task['id'])
@@ -53,6 +59,10 @@ class TodoistConnection():
         self.api.items.delete(task_id)
 
     def _sync(self):
+        self.api.sync()
+
+    def _reset(self):
+        self.api.reset_state()
         self.api.sync()
         self._projects = self.api.state['projects']
         self._tasks = self.api.state['items']
