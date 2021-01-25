@@ -1,5 +1,5 @@
 import todoist
-
+from datetime import  datetime, timedelta, timezone
 
 class TodoistConnection():
 
@@ -9,6 +9,8 @@ class TodoistConnection():
         self._projects = self.api.state['projects']
         self._tasks = self.api.state['items']
         self._labels = self.api.state['labels']
+        yesterday = (datetime.now() - timedelta(days=1)).astimezone()
+        self._completed_tasks = self.api.completed.get_all(limit=200, since=yesterday.isoformat())['items']
 
     @classmethod
     def from_config_file(cls, config_file):
@@ -19,6 +21,10 @@ class TodoistConnection():
     @property
     def projects(self):
         return self._projects
+
+    @property
+    def completed_tasks(self):
+        return self._completed_tasks
 
     @property
     def labels(self):
