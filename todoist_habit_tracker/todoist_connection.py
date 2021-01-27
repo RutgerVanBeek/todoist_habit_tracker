@@ -38,6 +38,12 @@ class TodoistConnection():
     def uncompleted_tasks(self):
         return self.filter_tasks(lambda task: task['checked'] == 0)
 
+    def get_completed_tasks(self, day, month, year):
+        since = datetime(year=year, month=month, day=day).astimezone().isoformat()
+        until = datetime(year=year, month=month, day=day+1).astimezone().isoformat()
+        return self.api.completed.get_all(limit=200, since=since, until=until)
+
+
     def filter_tasks(self, filter_function):
         return list(filter(filter_function, self.tasks))
 
