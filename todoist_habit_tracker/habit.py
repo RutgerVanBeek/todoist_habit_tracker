@@ -5,6 +5,7 @@ class Habit:
 
     def __init__(self, task, api, label_id):
         self.api = api
+        print(task['content'])
         effective_str = re.search('\[(.*)\]', task['content']).group(1)
         self.daily = 'daily' in effective_str
         self.later = 'later' in effective_str
