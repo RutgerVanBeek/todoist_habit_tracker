@@ -11,11 +11,10 @@ def main():
     filename = os.path.join(os.path.split(dirname)[0], '../.config/.drive_credentials.json')
     print(filename)
     gauth.LoadCredentialsFile(filename)
-    # gauth.LocalWebserverAuth()
+    if gauth.access_token_expired:
+        gauth.Refresh()
     drive = GoogleDrive(gauth)
-    # create random pandas dataframe
     test_df = pd.DataFrame({'a':[datetime.now(),2],'b':[2,3]})
-    #upload to QS
     df_to_drive('QS', drive, test_df, 'test.csv')
 
 
