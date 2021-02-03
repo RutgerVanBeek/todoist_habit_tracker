@@ -5,6 +5,9 @@ import os
 import pandas as pd
 import sys, getopt
 
+from pydrive.auth import GoogleAuth
+from pydrive.drive import GoogleDrive
+
 def init_todoist():
     dirname = os.path.abspath(os.path.dirname(__file__))
     filename = os.path.join(os.path.split(dirname)[0], '.config/.todoist.txt')
@@ -22,6 +25,25 @@ def append_data(succes_dict, weekly=False):
     except FileNotFoundError:
         df = pd.DataFrame(succes_dict, index=[index])
     df.to_csv(filename)
+
+def df_to_drive(folder, drive_api, df, title):
+    gauth = GoogleAuth()
+    dirname = os.path.abspath(os.path.abspath(__file__))
+    filename = os.path.join(os.path.split(dirname)[0], '../.config/.drive_credentials.json')
+    print(filename)
+    gauth.LoadCredentialsFile(filename)
+    if gauth.access_token_expired:
+        gauth.Refresh()
+    drive = GoogleDrive(gauth)
+    test_df = pd.DataFrame({'a': [datetime.now(), 2], 'b': [2, 3]})
+    df_to_drive('QS', drive, test_df, 'test.csv')
+    folder_id = drive_api.ListFile({'q': "title='" + folder + "' and mimeType='application/vnd.google-apps.folder' and trashed=false"}).GetList()[0]['id']
+    f = drive_api.CreateFile({'title': title, 'parents': [{'id': folder_id}]})
+    dirname = os.path.abspath(os.path.abspath(__file__))
+    filename = os.path.join(os.path.split(dirname)[0], '../log/{0}.csv'.format(title))
+    df.to_csv(filename)
+    f.SetContentFile(filename)
+    f.Upload({'convert': True})
 
 
 def main(argv):
@@ -58,8 +80,9 @@ def main(argv):
         succes[str(habit)] = habit.done()
         habit.determine_action()
 
-    if do_succes: append_data(succes)
     todoist.commit()
+    if do_succes:
+        append_data(succes)
     return todoist
 
 
