@@ -81,7 +81,7 @@ def main(argv):
         succes[str(habit)] = habit.done()
         habit.determine_action()
 
-    # todoist.commit()
+    todoist.commit()
     if do_succes:
         print('here')
         append_data(succes)
