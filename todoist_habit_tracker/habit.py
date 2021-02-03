@@ -15,7 +15,6 @@ class Habit:
         self.weekly_label_id = weekly_label_id
 
     def create_new(self, due='today'):
-        print('here daily')
         task = {
             'content': self.content,
             'project_id': self.task['project_id'],

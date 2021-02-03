@@ -14,36 +14,37 @@ def init_todoist():
     todoist = TodoistConnection.from_config_file(filename)
     return todoist
 
-def append_data(succes_dict, weekly=False):
-    dirname = os.path.abspath(os.path.abspath(__file__))
-    filename = os.path.join(os.path.split(dirname)[0], '../log/{0}_tasks.csv'.format(('weekly' if weekly else 'daily')))
-    min_days = 7 if weekly else 1
-    index = (datetime.today() - timedelta(days=min_days)).strftime('%d/%m/%Y')
-    try:
-        df = pd.read_csv(filename, index_col=0)
-        df = df.append(pd.DataFrame(succes_dict, index=[index]))
-    except FileNotFoundError:
-        df = pd.DataFrame(succes_dict, index=[index])
-    df.to_csv(filename)
-
-def df_to_drive(folder, drive_api, df, title):
+def init_drive(folder):
     gauth = GoogleAuth()
     dirname = os.path.abspath(os.path.abspath(__file__))
     filename = os.path.join(os.path.split(dirname)[0], '../.config/.drive_credentials.json')
-    print(filename)
     gauth.LoadCredentialsFile(filename)
     if gauth.access_token_expired:
         gauth.Refresh()
     drive = GoogleDrive(gauth)
-    test_df = pd.DataFrame({'a': [datetime.now(), 2], 'b': [2, 3]})
-    df_to_drive('QS', drive, test_df, 'test.csv')
-    folder_id = drive_api.ListFile({'q': "title='" + folder + "' and mimeType='application/vnd.google-apps.folder' and trashed=false"}).GetList()[0]['id']
-    f = drive_api.CreateFile({'title': title, 'parents': [{'id': folder_id}]})
+    folder_id = drive.ListFile(
+        {'q': "title='" + folder + "' and mimeType='application/vnd.google-apps.folder' and trashed=false"}).GetList()[
+        0]['id']
+    return drive, folder_id
+
+def load_data(drive_api, folder_id, filename, fullpath):
+    file = drive_api.ListFile({'q': "'{0}' in parents and trashed=false and title = '{1}'".format(folder_id, filename)}).GetList()[0]
+    file.GetContentFile(fullpath)
+    return pd.read_csv(fullpath, index_col=0), file['id']
+
+
+def append_data(succes_dict, weekly=False):
     dirname = os.path.abspath(os.path.abspath(__file__))
-    filename = os.path.join(os.path.split(dirname)[0], '../log/{0}.csv'.format(title))
+    filename = os.path.join(os.path.split(dirname)[0], '../log/{0}_tasks.csv'.format(('weekly' if weekly else 'daily')))
+    drive_api, folder_id = init_drive('QS')
+    df, file_id = load_data(drive_api, folder_id, 'daily_tasks.csv', filename)
+    min_days = 7 if weekly else 1
+    index = (datetime.today() - timedelta(days=min_days)).strftime('%d/%m/%Y')
+    df = df.append(pd.DataFrame(succes_dict, index=[index]))
     df.to_csv(filename)
-    f.SetContentFile(filename)
-    f.Upload({'convert': True})
+    file = drive_api.CreateFile({'id': file_id, 'title': 'daily_tasks.csv', 'parents': [{'id': folder_id}]})
+    file.SetContentFile(filename)
+    file.Upload({'convert': False})
 
 
 def main(argv):
@@ -54,7 +55,7 @@ def main(argv):
     WEEKLY_LABEL = 'upcoming_week'
     TEST_PROJECT='habit_tracker_test'
     try:
-        opts, args = getopt.getopt(argv, 'tsw:')
+        opts, args = getopt.getopt(argv, 'ts:w:')
     except getopt.GetoptError:
         sys.exit(2)
     for opt, args in opts:
@@ -80,8 +81,9 @@ def main(argv):
         succes[str(habit)] = habit.done()
         habit.determine_action()
 
-    todoist.commit()
+    # todoist.commit()
     if do_succes:
+        print('here')
         append_data(succes)
     return todoist
 
