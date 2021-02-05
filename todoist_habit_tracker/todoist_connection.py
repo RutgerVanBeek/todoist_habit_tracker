@@ -1,5 +1,6 @@
 import todoist
-from datetime import  datetime, timedelta, timezone
+from datetime import datetime, timedelta
+
 
 class TodoistConnection():
 
@@ -42,7 +43,6 @@ class TodoistConnection():
         since = datetime(year=year, month=month, day=day).astimezone().isoformat()
         until = (datetime(year=year, month=month, day=day) + timedelta(days=1)).astimezone().isoformat()
         return self.api.completed.get_all(limit=200, since=since, until=until)
-
 
     def filter_tasks(self, filter_function):
         return list(filter(filter_function, self.tasks))
