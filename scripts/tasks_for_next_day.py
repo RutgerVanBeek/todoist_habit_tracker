@@ -33,13 +33,12 @@ def load_data(drive_api, folder_id, filename, fullpath):
     return pd.read_csv(fullpath, index_col=0), file['id']
 
 
-def append_data(succes_dict, weekly=False):
+def append_data(succes_dict):
     dirname = os.path.abspath(os.path.abspath(__file__))
-    filename = os.path.join(os.path.split(dirname)[0], '../log/{0}_tasks.csv'.format(('weekly' if weekly else 'daily')))
+    filename = os.path.join(os.path.split(dirname)[0], '../log/daily_tasks.csv')
     drive_api, folder_id = init_drive('QS')
     df, file_id = load_data(drive_api, folder_id, 'daily_tasks.csv', filename)
-    min_days = 7 if weekly else 1
-    index = (datetime.today() - timedelta(days=min_days)).strftime('%d/%m/%Y')
+    index = (datetime.today() - timedelta(days=1)).strftime('%d/%m/%Y')
     df = df.append(pd.DataFrame(succes_dict, index=[index]))
     df.to_csv(filename)
     file = drive_api.CreateFile({'id': file_id, 'title': 'daily_tasks.csv', 'parents': [{'id': folder_id}]})
@@ -50,12 +49,10 @@ def append_data(succes_dict, weekly=False):
 def main(argv):
     test = False
     do_succes = False
-    weekly = False
     LABEL = 'habit_automatic'
-    WEEKLY_LABEL = 'upcoming_week'
     TEST_PROJECT='habit_tracker_test'
     try:
-        opts, args = getopt.getopt(argv, 'ts:w:')
+        opts, args = getopt.getopt(argv, 'ts:')
     except getopt.GetoptError:
         sys.exit(2)
     for opt, args in opts:
@@ -63,19 +60,11 @@ def main(argv):
             test = True
         if opt == '-s':
             do_succes = args.lower() == 'true'
-        if opt == '-w':
-            weekly = args.lower() == 'true'
     todoist = init_todoist()
     label_id = todoist.get_label_by_name(LABEL)['id']
-    weekly_label_id = todoist.get_label_by_name(WEEKLY_LABEL)['id']
     project_id = todoist.get_project_by_name(TEST_PROJECT)['id']
-    if test:
-        habits = todoist.filter_tasks(lambda task: (label_id in task['labels']) and (project_id == task['project_id']))
-    else:
-        habits = todoist.filter_tasks(lambda task: (label_id in task['labels']) and (project_id != task['project_id']))
-    habit_objects = [Habit(habit, todoist, label_id, weekly_label_id) for habit in habits]
-    habit_objects = filter(lambda habit: habit.weekly, habit_objects) if weekly \
-        else filter(lambda habit: habit.daily, habit_objects)
+    habits = todoist.filter_tasks(lambda task: (label_id in task['labels']) and (test == (project_id == task['project_id'])))
+    habit_objects = [Habit(habit, todoist, label_id) for habit in habits]
     succes = {}
     for habit in habit_objects:
         succes[str(habit)] = habit.done()
@@ -83,7 +72,6 @@ def main(argv):
 
     todoist.commit()
     if do_succes:
-        print('here')
         append_data(succes)
     return todoist
 
